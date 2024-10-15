@@ -3,7 +3,7 @@ from timm.layers import resample_abs_pos_embed_nhwc
 import torch
 import torch.nn as nn
 import math
-from mamba_ssm import Mamba
+# from mamba_ssm import Mamba
 
 import torch.nn.functional as F
 
@@ -27,8 +27,8 @@ class _LoRA_qkv_timm(nn.Module):
         self.w_identity = torch.eye(self.dim)
         self.reset_parameters()
     def reset_parameters(self) -> None:
-        nn.init.kaiming_uniform_(self.linear_a_q.weight, a=math.sqrt(5))     
-        nn.init.kaiming_uniform_(self.linear_a_v.weight, a=math.sqrt(5))  
+        nn.init.kaiming_uniform_(self.linear_a_q.weight, a=math.sqrt(5))
+        nn.init.kaiming_uniform_(self.linear_a_v.weight, a=math.sqrt(5))
         nn.init.zeros_(self.linear_b_q.weight)
         nn.init.zeros_(self.linear_b_v.weight)
     def forward(self, x):
@@ -38,7 +38,7 @@ class _LoRA_qkv_timm(nn.Module):
         qkv[:, :, : self.dim] += new_q
         qkv[:, :, -self.dim :] += new_v
         return qkv
-    
+
 class Mamba_Layer(nn.Module):
     def __init__(self, token_dim=256, channel_dim=768, channel_reduce=3, token_reduce=8):
         super().__init__()
@@ -48,22 +48,22 @@ class Mamba_Layer(nn.Module):
         self.token_r_dim = token_dim // token_reduce
         self.channel_downsample = nn.Linear(self.channel_dim, self.channel_r_dim, bias=False)
         self.norm1 = nn.LayerNorm(self.channel_r_dim)
-        self.mamba1 = Mamba(
-                d_model=self.channel_r_dim, # Model dimension d_model
-                d_state=16,  # SSM state expansion factor
-                d_conv=4,    # Local convolution width
-                expand=2,    # Block expansion factor
-            )
+        # self.mamba1 = Mamba(
+        #         d_model=self.channel_r_dim, # Model dimension d_model
+        #         d_state=16,  # SSM state expansion factor
+        #         d_conv=4,    # Local convolution width
+        #         expand=2,    # Block expansion factor
+        #     )
         self.channel_upsample = nn.Linear(self.channel_r_dim, self.channel_dim, bias=False)
 
         self.token_downsample = nn.Linear(self.token_dim, self.token_r_dim, bias=False)
         self.norm2 = nn.LayerNorm(self.token_r_dim)
-        self.mamba2 = Mamba(
-                d_model=self.token_r_dim, # Model dimension d_model
-                d_state=16,  # SSM state expansion factor
-                d_conv=4,    # Local convolution width
-                expand=2,    # Block expansion factor
-            )
+        # self.mamba2 = Mamba(
+        #         d_model=self.token_r_dim, # Model dimension d_model
+        #         d_state=16,  # SSM state expansion factor
+        #         d_conv=4,    # Local convolution width
+        #         expand=2,    # Block expansion factor
+        #     )
         self.token_upsample = nn.Linear(self.token_r_dim, self.token_dim, bias=False)
 
     def forward(self, x):
@@ -256,7 +256,7 @@ class SegModel(nn.Module):
         d2 = self.deconv2(torch.cat([up2, d1], dim=1))
         d3 = self.deconv3(torch.cat([up4, d2], dim=1))
         d4 = self.deconv4(torch.cat([up8, d3], dim=1))
-  
+
         if self.deep_supervision:
             up_out1 = F.interpolate(d1, size=img_shape[-2:], mode ='bilinear',align_corners=True)  # 512 32 32
             out1 = self.out_conv1(up_out1)
@@ -274,7 +274,7 @@ class SegModel(nn.Module):
             out4 = self.out_conv4(up_out4)
 
             return [out1, out2, out3, out4]
-        
+
         else:
             return self.final(d4)
 

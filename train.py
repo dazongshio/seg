@@ -43,13 +43,11 @@ def parse_args():
     parser.add_argument("--image_size", type=int, default=256, help="输入图像的尺寸")  # 添加输入图像尺寸参数
     parser.add_argument("--data_path", type=str, default="dataset/isic2018", help="数据集路径")  # 添加数据集路径参数
     parser.add_argument("--metrics", nargs='+', default=['iou', 'dice'], help="评估指标")  # 添加评估指标参数
-    parser.add_argument('--device', type=str, default='cuda:1', help="运行设备")  # 添加运行设备参数
+    parser.add_argument('--device', type=str, default='cuda:0', help="运行设备")  # 添加运行设备参数
     parser.add_argument("--lr", type=float, default=1e-4, help="学习率")  # 添加学习率参数
     parser.add_argument("--resume", type=str, default=None, help="加载已有模型")  # 添加模型恢复路径参数
     parser.add_argument('--lr_scheduler', type=bool, default=True, help='是否使用学习率调度器')  # 添加学习率调度器开关
-    parser.add_argument('--cfg', type=str,
-                        default='./model/swin_unet/swin_tiny_patch4_window7_224_lite.yaml',
-                        metavar="FILE", help='path to config file', )
+    parser.add_argument('--cfg', type=str,default='./model/swin_unet/swin_tiny_patch4_window7_224_lite.yaml',metavar="FILE", help='path to config file', )
     parser.add_argument('--deepsupervision', default=0)
     parser.add_argument('--augment', type=int, default=2)
     parser.add_argument('--num_classes', type=int, default=1)
@@ -106,8 +104,7 @@ def train_one_epoch(args, model, optimizer, train_loader, epoch, criterion):
     train_iter_metrics = [0] * len(args.metrics)  # 初始化评估指标
     model.train()  # 设置模型为训练模式
     for batch, batched_input in enumerate(train_loader):
-        image, label = batched_input["image"].float().to(args.device), batched_input["label"].to(
-            args.device)  # 将图像和标签加载到指定设备
+        image, label = batched_input["image"].float().to(args.device), batched_input["label"].to(args.device)  # 将图像和标签加载到指定设备
 
         masks = model(image)  # 前向传播，获取模型输出
         loss = criterion(masks, label)  # 计算损失
@@ -123,8 +120,7 @@ def train_one_epoch(args, model, optimizer, train_loader, epoch, criterion):
         if isinstance(masks, list):
             masks = masks[-1]  # 如果masks是列表，取最后一个元素
         train_batch_metrics = SegMetrics(masks, label, args.metrics)  # 计算当前batch的评估指标
-        train_iter_metrics = [train_iter_metrics[i] + train_batch_metrics[i] for i in
-                              range(len(args.metrics))]  # 累加评估指标
+        train_iter_metrics = [train_iter_metrics[i] + train_batch_metrics[i] for i in range(len(args.metrics))]  # 累加评估指标
 
     return train_losses, train_iter_metrics  # 返回训练损失和评估指标
 
@@ -301,7 +297,7 @@ if __name__ == '__main__':
         model_names = [
             # 'unet', 'resnet34_unet', 'cenet', 'fat_net',
             # 'trans_unet', 'swin_unet',
-            'mamba_sam',
+            # 'mamba_sam',
             'unet++', 'attention_unet', 'r2unet'
         ]
         for model_name in model_names:

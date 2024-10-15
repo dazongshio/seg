@@ -14,12 +14,8 @@ def _list_tensor(x, y):
     if type(x) is list:
         x = torch.tensor(np.array(x))  # 如果x是列表，转换为numpy数组再转换为张量
         y = torch.tensor(np.array(y))  # 同样处理y
-        if x.min() < 0:
-            x = m(x)  # 如果x中有负值，应用Sigmoid函数
-    else:
-        x, y = x, y  # 如果x不是列表，直接使用输入的x和y
-        if x.min() < 0:
-            x = m(x)  # 如果x中有负值，应用Sigmoid函数
+    if x.min() < 0:
+        x = m(x)  # 如果x中有负值，应用Sigmoid函数
     return x, y  # 返回处理后的x和y
 
 # 计算IoU (Intersection over Union) 指标

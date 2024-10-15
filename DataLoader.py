@@ -39,16 +39,14 @@ class DatasetLoader(Dataset):
         self.pixel_std = [58.395, 57.12, 57.375]  # 用于归一化的像素标准差
         self.data_dir = data_dir
         self.augment_multiplier = augment_multiplier  # 数据增强倍数
+        self.image_path = os.path.join(data_dir, f'{mode}/images')
+        self.image_list = os.listdir(self.image_path)
 
         self.mode = mode
         if mode == 'train':
-            self.image_path = os.path.join(data_dir, f'{mode}/images')
-            self.image_list = os.listdir(self.image_path)
             self.image_list = self.image_list * self.augment_multiplier  # 扩展列表
             self.transforms = train_transforms(image_size)  # 使用训练变换
         else:
-            self.image_path = os.path.join(data_dir, f'{mode}/images')
-            self.image_list = os.listdir(self.image_path)
             self.transforms = test_transforms(image_size)  # 使用测试变换
 
     def __getitem__(self, index):
